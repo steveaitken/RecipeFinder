@@ -7,7 +7,11 @@ using System.Web.Http;
 using System.Web.Http.Description;
 using Microsoft.Bot.Connector;
 using Microsoft.Bot.Connector.Utilities;
+using Microsoft.Bot.Builder.FormFlow;
+using Microsoft.Bot.Builder.Dialogs;
 using Newtonsoft.Json;
+using RecipeFinder.Model;
+using RecipeFinder.Dialogs;
 
 namespace RecipeFinder
 {
@@ -22,16 +26,38 @@ namespace RecipeFinder
         {
             if (message.Type == "Message")
             {
-                // calculate something for us to return
-                int length = (message.Text ?? string.Empty).Length;
-
-                // return our reply to the user
-                return message.CreateReplyMessage($"You sent {length} characters");
+                return await Conversation.SendAsync(message, MakeRoot);
             }
             else
             {
                 return HandleSystemMessage(message);
             }
+        }
+
+        internal static IDialog<Recipe> MakeRoot()
+        {
+            return Chain.From(() => new RecipeFinderDialog(Recipe.BuildForm)).Do(async (context, recipe) =>
+            {
+                try
+                {
+                    var completed = await recipe;
+                    // Actually process the recipe...
+                    await context.PostAsync("Processed your recipe!");
+                }
+                catch (FormCanceledException<Recipe> e)
+                {
+                    string reply;
+                    if (e.InnerException == null)
+                    {
+                        reply = $"You quit on {e.Last}--maybe you can finish next time!";
+                    }
+                    else
+                    {
+                        reply = "Sorry, I've had a short circuit.  Please try again.";
+                    }
+                    await context.PostAsync(reply);
+                }
+            }); ;
         }
 
         private Message HandleSystemMessage(Message message)

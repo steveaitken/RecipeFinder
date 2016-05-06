@@ -1,18 +1,21 @@
 ﻿using Microsoft.Bot.Builder.Dialogs;
+using Microsoft.Bot.Builder.FormFlow;
 using Microsoft.Bot.Builder.Luis;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
+using RecipeFinder.Model;
 
 namespace RecipeFinder.Dialogs
 {
     [LuisModel("f856bce2-68f1-47ca-a306-9250d54180dc", "63038e9502b5404e8e448e6e25eafb14")]
     [Serializable]
-    public class RecipeFinderDialog : LuisDialog<object>
+    public class RecipeFinderDialog : LuisDialog<Recipe>
     {
         #region variables
 
+        private readonly BuildForm<Recipe> MakeRecipeForm;
         public const string Entity_Ingredient = "";
         public const string Entity_EndProduct = "";
         public const string Entity_Dietary_Restriction = "";
@@ -22,9 +25,10 @@ namespace RecipeFinder.Dialogs
 
         #region constructors
 
-        public RecipeFinderDialog(ILuisService service = null)
+        public RecipeFinderDialog(BuildForm<Recipe> makeRecipeForm, ILuisService service = null)
             : base(service)
         {
+            MakeRecipeForm = makeRecipeForm;
         }
 
         #endregion
@@ -35,18 +39,13 @@ namespace RecipeFinder.Dialogs
         [LuisIntent("FindRecipeByEndProduct")]
         public async Task FindRecipeByEndProduct(IDialogContext context, LuisResult result)
         {
-
             // check intent score
             var endProductList = new List<string>();
             var dietaryRestrictionList = new List<string>();
             var dietList = new List<string>();
 
             // get ingredients
-            endProductList.AddRange(result.Entities.Where(f => f.Type == UtteranceType.Ingredient.ToString()).Select(f => f.Entity));
-
-            //not sure if this is correct
-            if (endProductList.Count == 0)
-                await context.PostAsync("Please specify at least one End Product.");
+            endProductList.AddRange(result.Entities.Where(f => f.Type == UtteranceType.EndProduct.ToString()).Select(f => f.Entity));
 
             // check filters
             dietaryRestrictionList.AddRange(result.Entities.Where(f => f.Type == UtteranceType.DietaryRestriction.ToString()).Select(f => f.Entity));
@@ -62,9 +61,8 @@ namespace RecipeFinder.Dialogs
             // make api call?
 
             // display results based on response
-
-            await context.PostAsync("did not find any recipes");
-            context.Wait(MessageReceived);
+            var pizzaForm = new FormDialog<Recipe>(new Recipe(), this.MakeRecipeForm, FormOptions.PromptInStart, result.Entities);
+            context.Call<Recipe>(pizzaForm, RecipeFormComplete);
         }
 
         [LuisIntent("FindRecipeByIngredients")]
@@ -76,10 +74,6 @@ namespace RecipeFinder.Dialogs
 
             // get ingredients
             ingredientList.AddRange(result.Entities.Where(f => f.Type == UtteranceType.Ingredient.ToString()).Select(f => f.Entity));
-
-            //not sure if this is correct
-            if (ingredientList.Count == 0)
-                await context.PostAsync("Please specify at least one ingredient.");
 
             // check filters
             dietaryRestrictionList.AddRange(result.Entities.Where(f => f.Type == UtteranceType.DietaryRestriction.ToString()).Select(f => f.Entity));
@@ -107,7 +101,30 @@ namespace RecipeFinder.Dialogs
 
         #region private methods
 
+        private async Task RecipeFormComplete(IDialogContext context, IAwaitable<Recipe> result)
+        {
+            Recipe recipe = null;
+            try
+            {
+                recipe = await result;
+            }
+            catch (OperationCanceledException)
+            {
+                await context.PostAsync("You canceled the form!");
+                return;
+            }
 
+            if (recipe != null)
+            {
+                await context.PostAsync("Your recipe: " + recipe.ToString());
+            }
+            else
+            {
+                await context.PostAsync("Form returned empty response!");
+            }
+
+            context.Wait(MessageReceived);
+        }
 
         #endregion
 
