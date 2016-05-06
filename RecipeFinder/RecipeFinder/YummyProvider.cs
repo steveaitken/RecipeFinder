@@ -373,19 +373,28 @@ namespace YummyProvider
 
             for (int i = 0; i < yummyRequest.yummyRequestCondition.Length; ++i)
             {
-                bool add = true;
+                bool add = true, addFilter = false;
+                string filter = null;
 
                 MetadataDictionary md = metadataDictionaries.FirstOrDefault(md1 => md1.metadataDictionaryType == yummyRequest.yummyRequestCondition[i].metadataDictionaryType);
                 if (md != null)
+                {
                     add = md.metadataDictionary.Select(md1 => md1.IsMatch(yummyRequest.yummyRequestCondition[i].condition)).Count() > 0;
+                    addFilter = true;
+                    filter = md.metadataDictionary.First(md1 => md1.IsMatch(yummyRequest.yummyRequestCondition[i].condition)).searchValue;
+                }
 
 				if (add)
 				{
 					string h = "&";
 					h += searchParameters.First(sp => sp.searchParameterType == yummyRequest.yummyRequestCondition[i].searchParameterType).URLParameter;
-					h += "=" + yummyRequest.yummyRequestCondition[i].condition;
 
-					query += h;
+                    if (!addFilter)
+                        h += "=" + yummyRequest.yummyRequestCondition[i].condition;
+                    else
+                        h += "=" + filter;
+
+                    query += h;
 				}
 			}
 
