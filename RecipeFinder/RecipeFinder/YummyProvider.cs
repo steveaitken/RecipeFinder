@@ -9,16 +9,23 @@ using System.Threading.Tasks;
 
 namespace YummyProvider
 {
-    public class MetadataResponse
+    public abstract class MetadataResponse
     {
         public string searchValue;
+
+        public abstract bool Is(string term);
 	}
 
 	public class MetadataResponseIngredient:MetadataResponse
 	{
 		public string description;
 		public string term;
-	}
+
+        public override bool Is(string term)
+        {
+            return this.term.Equals(term, StringComparison.InvariantCultureIgnoreCase);
+        }
+    }
 
 	public class MetadataResponseAllergy:MetadataResponse
 	{
@@ -27,7 +34,12 @@ namespace YummyProvider
 		public string longDescription;
 		public string type;
 		public string[] localesAvailableIn;
-	}
+
+        public override bool Is(string term)
+        {
+            return shortDescription.Equals(term, StringComparison.InvariantCultureIgnoreCase);
+        }
+    }
 
 	public class MetadataResponseDiet:MetadataResponse
 	{
@@ -36,7 +48,12 @@ namespace YummyProvider
 		public string longDescription;
 		public string type;
 		public string[] localesAvailableIn;
-	}
+
+        public override bool Is(string term)
+        {
+            return shortDescription.Equals(term, StringComparison.InvariantCultureIgnoreCase);
+        }
+    }
 
 	public class MetadataResponseCuisine:MetadataResponse
 	{
@@ -45,7 +62,12 @@ namespace YummyProvider
 		public string type;
 		public string description;
 		public string[] localesAvailableIn;
-	}
+
+        public override bool Is(string term)
+        {
+            return description.Equals(term, StringComparison.InvariantCultureIgnoreCase);
+        }
+    }
 
 	public class MetadataResponseCourse:MetadataResponse
 	{
@@ -54,7 +76,12 @@ namespace YummyProvider
 		public string type;
 		public string description;
 		public string[] localesAvailableIn;
-	}
+
+        public override bool Is(string term)
+        {
+            return description.Equals(term, StringComparison.InvariantCultureIgnoreCase);
+        }
+    }
 
 	public enum MetadataDictionaryType
     {
@@ -339,25 +366,13 @@ namespace YummyProvider
 		{
 			string query = rootURL + recipesURL +  "?" + idKey;
 
-			for (int i = 0; i < yummyRequest.yummyRequestCondition.Length; ++i)
-			{
-				bool add = true;
+            for (int i = 0; i < yummyRequest.yummyRequestCondition.Length; ++i)
+            {
+                bool add = true;
 
-				if (yummyRequest.yummyRequestCondition[i].searchParameterType == SearchParameterType.AllowedAllergy
-					|| yummyRequest.yummyRequestCondition[i].searchParameterType == SearchParameterType.AllowedCourse
-					|| yummyRequest.yummyRequestCondition[i].searchParameterType == SearchParameterType.AllowedCuisine
-					|| yummyRequest.yummyRequestCondition[i].searchParameterType == SearchParameterType.AllowedDiet
-					|| yummyRequest.yummyRequestCondition[i].searchParameterType == SearchParameterType.AllowedIngredient
-					|| yummyRequest.yummyRequestCondition[i].searchParameterType == SearchParameterType.ExcludedCourse
-					|| yummyRequest.yummyRequestCondition[i].searchParameterType == SearchParameterType.ExcludedCuisine
-					|| yummyRequest.yummyRequestCondition[i].searchParameterType == SearchParameterType.ExcludedIngredient)
-				{
-					MetadataDictionary md = metadataDictionaries.First(md1 => md1.metadataDictionaryType == yummyRequest.yummyRequestCondition[i].metadataDictionaryType);
-
-					if (md != null)
-						if (md.metadataDictionary.Select(md1 => md1.searchValue == yummyRequest.yummyRequestCondition[i].condition).Count() == 0)
-							add = false;
-				}
+                MetadataDictionary md = metadataDictionaries.FirstOrDefault(md1 => md1.metadataDictionaryType == yummyRequest.yummyRequestCondition[i].metadataDictionaryType);
+                if (md != null)
+                    add = md.metadataDictionary.Select(md1 => md1.Is(yummyRequest.yummyRequestCondition[i].condition)).Count() > 0;
 
 				if (add)
 				{
@@ -372,40 +387,33 @@ namespace YummyProvider
 			return query;
 		}
 
-
-		public YummyRecipesResponse GetRecipes(YummyRequest yummyRequest)
+		public async Task<YummyRecipesResponse> GetRecipes(YummyRequest yummyRequest)
 		{
 			string query = CreateGetRecipesQuery(yummyRequest);
 
 			HttpClient hc = new HttpClient();
 
-			Task<HttpResponseMessage> t = hc.GetAsync(query);
-			t.Wait();
+			HttpResponseMessage t = await hc.GetAsync(query);
+			string t1 = await t.Content.ReadAsStringAsync();
 
-			Task<string> t1 = t.Result.Content.ReadAsStringAsync();
-			t1.Wait();
-
-			if (!string.IsNullOrWhiteSpace(t1.Result))
-				return (YummyRecipesResponse)JsonConvert.DeserializeObject(t1.Result, typeof(YummyRecipesResponse));
+			if (!string.IsNullOrWhiteSpace(t1))
+				return (YummyRecipesResponse)JsonConvert.DeserializeObject(t1, typeof(YummyRecipesResponse));
 			else
 				return null;
 		}
 
 
-		public YummyRecipeResponse GetRecipe(string recipeID)
+		public async Task<YummyRecipeResponse> GetRecipe(string recipeID)
 		{
 			string query = rootURL + recipeURL + "/" + recipeID + "?" + idKey;
 
 			HttpClient hc = new HttpClient();
 
-			Task<HttpResponseMessage> t = hc.GetAsync(query);
-			t.Wait();
+			HttpResponseMessage t = await hc.GetAsync(query);
+			string t1 = await t.Content.ReadAsStringAsync();
 
-			Task<string> t1 = t.Result.Content.ReadAsStringAsync();
-			t1.Wait();
-
-			if (!string.IsNullOrWhiteSpace(t1.Result))
-				return (YummyRecipeResponse)JsonConvert.DeserializeObject(t1.Result, typeof(YummyRecipeResponse));
+			if (!string.IsNullOrWhiteSpace(t1))
+				return (YummyRecipeResponse)JsonConvert.DeserializeObject(t1, typeof(YummyRecipeResponse));
 			else
 				return null;
 		}
