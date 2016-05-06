@@ -13,7 +13,7 @@ namespace YummyProvider
     {
         public string searchValue;
 
-        public abstract bool Is(string term);
+        public abstract bool IsMatch(string term);
 	}
 
 	public class MetadataResponseIngredient:MetadataResponse
@@ -21,7 +21,7 @@ namespace YummyProvider
 		public string description;
 		public string term;
 
-        public override bool Is(string term)
+        public override bool IsMatch(string term)
         {
             return this.term.Equals(term, StringComparison.InvariantCultureIgnoreCase);
         }
@@ -35,7 +35,7 @@ namespace YummyProvider
 		public string type;
 		public string[] localesAvailableIn;
 
-        public override bool Is(string term)
+        public override bool IsMatch(string term)
         {
             return shortDescription.Equals(term, StringComparison.InvariantCultureIgnoreCase);
         }
@@ -49,7 +49,7 @@ namespace YummyProvider
 		public string type;
 		public string[] localesAvailableIn;
 
-        public override bool Is(string term)
+        public override bool IsMatch(string term)
         {
             return shortDescription.Equals(term, StringComparison.InvariantCultureIgnoreCase);
         }
@@ -63,7 +63,7 @@ namespace YummyProvider
 		public string description;
 		public string[] localesAvailableIn;
 
-        public override bool Is(string term)
+        public override bool IsMatch(string term)
         {
             return description.Equals(term, StringComparison.InvariantCultureIgnoreCase);
         }
@@ -77,7 +77,7 @@ namespace YummyProvider
 		public string description;
 		public string[] localesAvailableIn;
 
-        public override bool Is(string term)
+        public override bool IsMatch(string term)
         {
             return description.Equals(term, StringComparison.InvariantCultureIgnoreCase);
         }
@@ -372,7 +372,7 @@ namespace YummyProvider
 
                 MetadataDictionary md = metadataDictionaries.FirstOrDefault(md1 => md1.metadataDictionaryType == yummyRequest.yummyRequestCondition[i].metadataDictionaryType);
                 if (md != null)
-                    add = md.metadataDictionary.Select(md1 => md1.Is(yummyRequest.yummyRequestCondition[i].condition)).Count() > 0;
+                    add = md.metadataDictionary.Select(md1 => md1.IsMatch(yummyRequest.yummyRequestCondition[i].condition)).Count() > 0;
 
 				if (add)
 				{
