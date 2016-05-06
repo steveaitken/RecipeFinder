@@ -9,14 +9,14 @@ using System.Threading.Tasks;
 
 namespace YummyProvider
 {
-    public abstract class MetadataResponse
+    public abstract class Metadata
     {
         public string searchValue;
 
         public abstract bool IsMatch(string term);
 	}
 
-	public class MetadataResponseIngredient:MetadataResponse
+	public class MetadataIngredient:Metadata
 	{
 		public string description;
 		public string term;
@@ -27,7 +27,7 @@ namespace YummyProvider
         }
     }
 
-	public class MetadataResponseAllergy:MetadataResponse
+	public class MetadataAllergy:Metadata
 	{
 		public string id;
 		public string shortDescription;
@@ -41,7 +41,7 @@ namespace YummyProvider
         }
     }
 
-	public class MetadataResponseDiet:MetadataResponse
+	public class MetadataDiet:Metadata
 	{
 		public string id;
 		public string shortDescription;
@@ -55,7 +55,7 @@ namespace YummyProvider
         }
     }
 
-	public class MetadataResponseCuisine:MetadataResponse
+	public class MetadataCuisine:Metadata
 	{
 		public string id;
 		public string name;
@@ -69,7 +69,7 @@ namespace YummyProvider
         }
     }
 
-	public class MetadataResponseCourse:MetadataResponse
+	public class MetadataCourse:Metadata
 	{
 		public string id;
 		public string name;
@@ -103,7 +103,7 @@ namespace YummyProvider
     {
 		public MetadataDictionaryType metadataDictionaryType;
 		public string requestURL;
-		public MetadataResponse[] metadataDictionary;
+		public Metadata[] metadataDictionary;
 		public Type metadataResponseType;
 
 		public MetadataDictionary(MetadataDictionaryType metadataDictionaryType, string requestURL, Type metadataResponseType)
@@ -292,11 +292,11 @@ namespace YummyProvider
 
 		static MetadataDictionary[] metadataDictionaries = new MetadataDictionary[]
 		{
-			new MetadataDictionary(MetadataDictionaryType.Ingredient, "/metadata/ingredient", typeof(MetadataResponseIngredient[])),
-			new MetadataDictionary(MetadataDictionaryType.Allergy, "/metadata/allergy", typeof(MetadataResponseAllergy[])),
-			new MetadataDictionary(MetadataDictionaryType.Diet, "/metadata/diet", typeof(MetadataResponseDiet[])),
-			new MetadataDictionary(MetadataDictionaryType.Cuisine, "/metadata/cuisine", typeof(MetadataResponseCuisine[])),
-			new MetadataDictionary(MetadataDictionaryType.Course, "/metadata/course", typeof(MetadataResponseCourse[])),
+			new MetadataDictionary(MetadataDictionaryType.Ingredient, "/metadata/ingredient", typeof(MetadataIngredient[])),
+			new MetadataDictionary(MetadataDictionaryType.Allergy, "/metadata/allergy", typeof(MetadataAllergy[])),
+			new MetadataDictionary(MetadataDictionaryType.Diet, "/metadata/diet", typeof(MetadataDiet[])),
+			new MetadataDictionary(MetadataDictionaryType.Cuisine, "/metadata/cuisine", typeof(MetadataCuisine[])),
+			new MetadataDictionary(MetadataDictionaryType.Course, "/metadata/course", typeof(MetadataCourse[])),
 		};
 
 		static SearchParameter[] searchParameters = new SearchParameter[]
@@ -313,6 +313,11 @@ namespace YummyProvider
 				new SearchParameter(SearchParameterType.MaxResult, "maxResult"),
 				new SearchParameter(SearchParameterType.MaxTotalTimeInSeconds, "maxTotalTimeInSeconds"),
 			};
+
+        public static Metadata[] GetMetadata(MetadataDictionaryType metadataDictionaryType)
+        {
+            return metadataDictionaries.First(md => md.metadataDictionaryType == metadataDictionaryType).metadataDictionary;
+        }
 
 		public YummlyProvider()
 		{
@@ -338,7 +343,7 @@ namespace YummyProvider
 
 				string res1 = t1.Result.Substring(ind1, ind2 - ind1 + 1);
 
-				metadataDictionaries[i].metadataDictionary = (MetadataResponse[])JsonConvert.DeserializeObject(res1, metadataDictionaries[i].metadataResponseType);
+				metadataDictionaries[i].metadataDictionary = (Metadata[])JsonConvert.DeserializeObject(res1, metadataDictionaries[i].metadataResponseType);
 
 				/*FileStream f = File.Create("md_" + i.ToString());
 				StreamWriter sw = new StreamWriter(f);
@@ -358,7 +363,7 @@ namespace YummyProvider
 				string res1 = sr.ReadToEnd();
 				f.Close();
 
-				metadataDictionaries[i].metadataDictionary = (MetadataResponse[])JsonConvert.DeserializeObject(res1, metadataDictionaries[i].metadataResponseType);
+				metadataDictionaries[i].metadataDictionary = (Metadata[])JsonConvert.DeserializeObject(res1, metadataDictionaries[i].metadataResponseType);
 			}
 		}
 
