@@ -132,28 +132,8 @@ namespace RecipeFinder.Model
         public override string ToString()
         {
             var builder = new StringBuilder();
-            builder.AppendFormat("Recipe ({0}, ", Size);
-            switch (Kind)
-            {
-                case PizzaOptions.BYOPizza:
-                    builder.AppendFormat("{0}, {1}, {2}, [", Kind, BYO.Crust, BYO.Sauce);
-                    foreach (var topping in BYO.Toppings)
-                    {
-                        builder.AppendFormat("{0} ", topping);
-                    }
-                    builder.AppendFormat("]");
-                    break;
-                case PizzaOptions.GourmetDelitePizza:
-                    builder.AppendFormat("{0}, {1}", Kind, GourmetDelite);
-                    break;
-                case PizzaOptions.SignaturePizza:
-                    builder.AppendFormat("{0}, {1}", Kind, Signature);
-                    break;
-                case PizzaOptions.StuffedPizza:
-                    builder.AppendFormat("{0}, {1}", Kind, Stuffed);
-                    break;
-            }
-            builder.AppendFormat(", {0}, {1})", Address, Coupon);
+            builder.AppendFormat("Allergies: {0}", string.Join(",", Allergies));
+            builder.AppendFormat("Diet: {0}", Diet.ToString());
             return builder.ToString();
         }
     };
