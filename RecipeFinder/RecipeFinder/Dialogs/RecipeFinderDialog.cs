@@ -41,27 +41,10 @@ namespace RecipeFinder.Dialogs
         {
             // check intent score
             var endProductList = new List<string>();
-            var dietaryRestrictionList = new List<string>();
-            var dietList = new List<string>();
-
-            // get ingredients
             endProductList.AddRange(result.Entities.Where(f => f.Type == UtteranceType.EndProduct.ToString()).Select(f => f.Entity));
 
-            // check filters
-            dietaryRestrictionList.AddRange(result.Entities.Where(f => f.Type == UtteranceType.DietaryRestriction.ToString()).Select(f => f.Entity));
-            dietList.AddRange(result.Entities.Where(f => f.Type == UtteranceType.Diet.ToString()).Select(f => f.Entity));
-
-
-            // check score
-
-            // get filters
-
-            // if need more info, prompt user for more info
-
-            // make api call?
-
-            // display results based on response
-            var pizzaForm = new FormDialog<Recipe>(new Recipe(), this.MakeRecipeForm, FormOptions.PromptInStart, result.Entities);
+            // dsplay results based on response
+            var pizzaForm = new FormDialog<Recipe>(new Recipe(endProductList), this.MakeRecipeForm, FormOptions.PromptInStart, result.Entities);
             context.Call<Recipe>(pizzaForm, RecipeFormComplete);
         }
 
@@ -69,23 +52,13 @@ namespace RecipeFinder.Dialogs
         public async Task FindRecipeByIngredients(IDialogContext context, LuisResult result)
         {
             var ingredientList = new List<string>();
-            var dietaryRestrictionList = new List<string>();
-            var dietList = new List<string>();
 
             // get ingredients
             ingredientList.AddRange(result.Entities.Where(f => f.Type == UtteranceType.Ingredient.ToString()).Select(f => f.Entity));
 
-            // check filters
-            dietaryRestrictionList.AddRange(result.Entities.Where(f => f.Type == UtteranceType.DietaryRestriction.ToString()).Select(f => f.Entity));
-            dietList.AddRange(result.Entities.Where(f => f.Type == UtteranceType.Diet.ToString()).Select(f => f.Entity));
-
-            // if need more info, prompt user for more info
-
-            // make api call?
-
             // display results based on response
-            await context.PostAsync("did not find any recipes");
-            context.Wait(MessageReceived);
+            var pizzaForm = new FormDialog<Recipe>(new Recipe(ingredientList), this.MakeRecipeForm, FormOptions.PromptInStart, result.Entities);
+            context.Call<Recipe>(pizzaForm, RecipeFormComplete);
         }
 
         [LuisIntent("None")]

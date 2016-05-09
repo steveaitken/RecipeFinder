@@ -78,23 +78,12 @@ namespace RecipeFinder.Model
     {
         static YummlyProvider yp;
 
-        static Recipe()
+        public Recipe(List<string> searchTerms) : base()
         {
-            yp = new YummlyProvider();
+            yp = yp ?? new YummlyProvider();
+            this.SearchTerms = searchTerms;
         }
-
-        [Optional]
-        [Template(TemplateUsage.NotUnderstood, "What does \"{0}\" mean???")]
-        [Describe("Ingredient")]
-        [Template(TemplateUsage.NoPreference, "None")]
-        public string Ingredient;
-
-        [Optional]
-        [Template(TemplateUsage.NotUnderstood, "What does \"{0}\" mean???")]
-        [Describe("End Products")]
-        [Template(TemplateUsage.NoPreference, "None")]
-        public string EndProduct;
-
+        
         [Optional]
         [Prompt("Are you interested in a specific diet? {||}")]
         [Template(TemplateUsage.NotUnderstood, "What does \"{0}\" mean???")]
@@ -109,15 +98,16 @@ namespace RecipeFinder.Model
         [Template(TemplateUsage.NoPreference, "None")]
         public AllowedDietaryRestriction DietaryRestriction;
 
-
+        [Prompt("What do you want to search?")]
+        private List<string> SearchTerms;
 
         public static IForm<Recipe> BuildForm()
         {
             OnCompletionAsyncDelegate<Recipe> processOrder = async (context, state) =>
             {
                 List<YummyRequestCondition> conditions = new List<YummyRequestCondition>();
+                conditions.Add(new YummyRequestCondition(SearchParameterType.Search, string.Join(" ", state.SearchTerms)));
 
-                conditions.Add(new YummyRequestCondition(SearchParameterType.Search, state.EndProduct));
 
                 if (state.Diet != AllowedDiet.None)
                 {
@@ -160,8 +150,11 @@ namespace RecipeFinder.Model
         public override string ToString()
         {
             var builder = new StringBuilder();
-            builder.AppendFormat("Allergies: {0}", string.Join(",", DietaryRestriction));
-            builder.AppendFormat("Diet: {0}", Diet.ToString());
+            builder.AppendFormat("Dietary Restirctions: {0} ", string.Join(",", DietaryRestriction));
+            builder.AppendLine();
+            builder.AppendFormat("Diet: {0} ", Diet.ToString());
+            builder.AppendLine();
+            builder.AppendFormat("Search terms: {0} ", string.Join(" ", SearchTerms));
             return builder.ToString();
         }
     };

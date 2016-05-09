@@ -294,7 +294,7 @@ namespace YummyProvider
 
 	public class YummlyProvider
     {
-        static string rootURL = "http://api.yummly.com/v1/api";
+        static string rootURL = "https://api.yummly.com/v1/api";
 		static string applicationID = "ade40f2d";
 		static string applicationKey = "2c70977d7f3ce47644cb2e8e69d71409";
 		static string idKey = "_app_id=" + applicationID +"&_app_key=" + applicationKey;
