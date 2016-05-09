@@ -21,7 +21,6 @@ namespace RecipeFinder.Model
     public enum AllowedDietaryRestriction
     {
         None,
-<<<<<<< HEAD
         [SearchValue("396^Dairy-Free")]
         [Terms(new string[] { "dairy free", "dairy-free", "dairy - free" })]
         DairyFree,
@@ -67,12 +66,8 @@ namespace RecipeFinder.Model
         Vegan,
         [Terms(new string[] { "lacto-ovo vegetarian", "lacto ovo vegetarian", "lacto ovo" })]
         LactoOvoVegetarian,
-<<<<<<< HEAD
         [SearchValue("403^Paleo")]
-        [Terms(new string[] { "paleo", "steve" })]
-=======
         [Terms(new string[] { "paleo" })]
->>>>>>> f4ec33b96117c7baef3869355da198c5bed635d1
         Paleo
     }
 
@@ -129,9 +124,9 @@ namespace RecipeFinder.Model
                         conditions.Add(new YummyRequestCondition(SearchParameterType.AllowedDiet, ((TermsAttribute)attributes[0]).Alternatives[0]));
                 }
 
-                if (state.Allergy != AllowedAllergy.None)
+                if (state.DietaryRestriction != AllowedDietaryRestriction.None)
                 {
-                    object[] attributes = typeof(AllowedAllergy).GetMember(state.Allergy.ToString())[0].GetCustomAttributes(typeof(TermsAttribute), false);
+                    object[] attributes = typeof(AllowedDietaryRestriction).GetMember(state.DietaryRestriction.ToString())[0].GetCustomAttributes(typeof(TermsAttribute), false);
                     if (attributes != null)
                         conditions.Add(new YummyRequestCondition(SearchParameterType.AllowedAllergy, ((TermsAttribute)attributes[0]).Alternatives[1]));
                 }
