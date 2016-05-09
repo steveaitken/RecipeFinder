@@ -113,14 +113,12 @@ namespace RecipeFinder.Model
                         conditions.Add(new YummyRequestCondition(SearchParameterType.AllowedDiet, ((TermsAttribute)attributes[0]).Alternatives[0]));
                 }
 
-                if (state.Allergies != null)
-                    for (int i = 0; i < state.Allergies.Count; ++i)
-                        if (state.Allergies[i] != AllowedAllergy.None)
-                        {
-                            object[] attributes = typeof(AllowedAllergy).GetMember(state.Allergies[i].ToString())[0].GetCustomAttributes(typeof(TermsAttribute), false);
-                            if (attributes != null)
-                                conditions.Add(new YummyRequestCondition(SearchParameterType.AllowedAllergy, ((TermsAttribute)attributes[0]).Alternatives[1]));
-                        }
+                if (state.Allergy != AllowedAllergy.None)
+                {
+                    object[] attributes = typeof(AllowedAllergy).GetMember(state.Allergy.ToString())[0].GetCustomAttributes(typeof(TermsAttribute), false);
+                    if (attributes != null)
+                        conditions.Add(new YummyRequestCondition(SearchParameterType.AllowedAllergy, ((TermsAttribute)attributes[0]).Alternatives[1]));
+                }
 
                 YummyRecipesResponse yrs = await yp.GetRecipes(new YummyRequest(conditions.ToArray()));
 
