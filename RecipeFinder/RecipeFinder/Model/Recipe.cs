@@ -98,6 +98,7 @@ namespace RecipeFinder.Model
         [Template(TemplateUsage.NoPreference, "None")]
         public AllowedDietaryRestriction DietaryRestriction;
 
+        [Prompt("What do you want to search?")]
         private List<string> EndProductList;
 
         public static IForm<Recipe> BuildForm()
