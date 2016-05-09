@@ -21,35 +21,24 @@ namespace RecipeFinder.Model
     public enum AllowedDietaryRestriction
     {
         None,
-<<<<<<< HEAD
-        [SearchValue("396^Dairy-Free")]
         [Terms(new string[] { "dairy free", "dairy-free", "dairy - free" })]
         DairyFree,
-        [SearchValue("397^Egg-Free")]
         [Terms(new string[] { "egg free", "egg-free", "egg - free" })]
         EggFree,
-        [SearchValue("393^Gluten-Free")]
         [Terms(new string[] { "gluten free", "gluten-free", "gluten - free" })]
         GlutenFree,
-        [SearchValue("394^Peanut-Free")]
         [Terms(new string[] { "peanut free", "peanut-free", "peanut - free" })]
         PeanutFree,
-        [SearchValue("398^Seafood-Free")]
         [Terms(new string[] { "seafood free", "seafood-free", "seafood - free" })]
         SeadfoodFree,
-        [SearchValue("399^Sesame-Free")]
         [Terms(new string[] { "sesame free", "sesame-free", "sesame - free" })]
         SesameFree,
-        [SearchValue("400^Soy-Free")]
         [Terms(new string[] { "soy free", "soy-free", "soy - free" })]
         SoyFree,
-        [SearchValue("401^Sulfite-Free")]
         [Terms(new string[] { "sulfite free", "sulfite-free", "sulfite - free" })]
         SulfiteFree,
-        [SearchValue("395^Tree Nut-Free")]
         [Terms(new string[] { "tree nut free", "tree nut-free", "tree nut - free" })]
         TreeNutFree,
-        [SearchValue("392^Wheat-Free")]
         [Terms(new string[] { "wheat free", "wheat-free", "wheat - free" })]
         WheatFree
     }
@@ -67,12 +56,7 @@ namespace RecipeFinder.Model
         Vegan,
         [Terms(new string[] { "lacto-ovo vegetarian", "lacto ovo vegetarian", "lacto ovo" })]
         LactoOvoVegetarian,
-<<<<<<< HEAD
-        [SearchValue("403^Paleo")]
-        [Terms(new string[] { "paleo", "steve" })]
-=======
         [Terms(new string[] { "paleo" })]
->>>>>>> f4ec33b96117c7baef3869355da198c5bed635d1
         Paleo
     }
 
@@ -129,9 +113,9 @@ namespace RecipeFinder.Model
                         conditions.Add(new YummyRequestCondition(SearchParameterType.AllowedDiet, ((TermsAttribute)attributes[0]).Alternatives[0]));
                 }
 
-                if (state.Allergy != AllowedAllergy.None)
+                if (state.DietaryRestriction != AllowedDietaryRestriction.None)
                 {
-                    object[] attributes = typeof(AllowedAllergy).GetMember(state.Allergy.ToString())[0].GetCustomAttributes(typeof(TermsAttribute), false);
+                    object[] attributes = typeof(AllowedDietaryRestriction).GetMember(state.DietaryRestriction.ToString())[0].GetCustomAttributes(typeof(TermsAttribute), false);
                     if (attributes != null)
                         conditions.Add(new YummyRequestCondition(SearchParameterType.AllowedAllergy, ((TermsAttribute)attributes[0]).Alternatives[1]));
                 }
