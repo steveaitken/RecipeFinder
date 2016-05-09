@@ -384,7 +384,7 @@ namespace YummyProvider
 		{
 			for (int i = 0; i < metadataDictionaries.Length; ++i)
 			{
-				FileStream f = File.OpenRead("YummyMetaData\\md_" + i.ToString());
+				FileStream f = File.OpenRead(System.Web.HttpContext.Current.Server.MapPath("~/").TrimEnd('\\') + "\\YummyMetaData\\md_" + i.ToString() + ".json");
 				StreamReader sr = new StreamReader(f);
 				string res1 = sr.ReadToEnd();
 				f.Close();
