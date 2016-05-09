@@ -56,7 +56,6 @@ namespace RecipeFinder.Model
         Vegan,
         [Terms(new string[] { "lacto-ovo vegetarian", "lacto ovo vegetarian", "lacto ovo" })]
         LactoOvoVegetarian,
-        [SearchValue("403^Paleo")]
         [Terms(new string[] { "paleo" })]
         Paleo
     }
