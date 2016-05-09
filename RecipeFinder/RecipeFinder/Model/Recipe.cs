@@ -42,7 +42,7 @@ namespace RecipeFinder.Model
         [Terms(new string[] { "soy free", "soy-free", "soy - free" })]
         SoyFree,
         [SearchValue("401^Sulfite-Free")]
-        [Terms(new string[] { "sulfite free", "sulfite-free", , "sulfite - free" })]
+        [Terms(new string[] { "sulfite free", "sulfite-free", "sulfite - free" })]
         SulfiteFree,
         [SearchValue("395^Tree Nut-Free")]
         [Terms(new string[] { "tree nut free", "tree nut-free", "tree nut - free" })]
