@@ -96,12 +96,7 @@ namespace RecipeFinder.Model
         [Template(TemplateUsage.NotUnderstood, "What does \"{0}\" mean???")]
         [Describe("Allowed diets")]
         [Template(TemplateUsage.NoPreference, "None")]
-        public List<AllowedAllergy> Allergies
-        {
-            get { return _allergies; }
-            set { _allergies = value; }
-        }
-        private List<AllowedAllergy> _allergies;
+        public AllowedAllergy Allergy;
 
         public static IForm<Recipe> BuildForm()
         {
@@ -141,7 +136,7 @@ namespace RecipeFinder.Model
             return new FormBuilder<Recipe>()
                         .Message("Welcome to the search recipe bot!")
                         .Field(nameof(Diet))
-                        .Field(nameof(Allergies))
+                        .Field(nameof(Allergy))
                         //.Message("Searching recipes using filters for diet {Diet} and allergies {Allergies}.")
                         //.Confirm("Do you want to order your {Length} {Sandwich} on {Bread} {&Bread} with {[{Cheese} {Toppings} {Sauces}]} to be sent to {DeliveryAddress} {?at {DeliveryTime:t}}?")
                         //.AddRemainingFields()
@@ -153,7 +148,7 @@ namespace RecipeFinder.Model
         public override string ToString()
         {
             var builder = new StringBuilder();
-            builder.AppendFormat("Allergies: {0}", string.Join(",", Allergies));
+            builder.AppendFormat("Allergy: {0}", Allergy.ToString());
             builder.AppendFormat("Diet: {0}", Diet.ToString());
             return builder.ToString();
         }

@@ -9,7 +9,7 @@ using RecipeFinder.Model;
 
 namespace RecipeFinder.Dialogs
 {
-    [LuisModel("f856bce2-68f1-47ca-a306-9250d54180dc", "63038e9502b5404e8e448e6e25eafb14")]
+    [LuisModel("6189a3a5-388b-4000-b98c-fefb8425c3d6", "3192d08c955543adab3aa9c2b31a1093")]
     [Serializable]
     public class RecipeFinderDialog : LuisDialog<Recipe>
     {
