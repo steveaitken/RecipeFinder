@@ -17,38 +17,38 @@ namespace RecipeFinder.Model
 
     public enum ExcludedIngredient { }
 
-    public enum AllowedAllergy
+    public enum AllowedDietaryRestriction
     {
         None,
         [SearchValue("396^Dairy-Free")]
-        [Terms(new string[] { "dairy free", "dairy-free" })]
+        [Terms(new string[] { "dairy free", "dairy-free", "dairy - free" })]
         DairyFree,
         [SearchValue("397^Egg-Free")]
-        [Terms(new string[] { "egg free", "egg-free" })]
+        [Terms(new string[] { "egg free", "egg-free", "egg - free" })]
         EggFree,
         [SearchValue("393^Gluten-Free")]
-        [Terms(new string[] { "gluten free", "gluten-free" })]
+        [Terms(new string[] { "gluten free", "gluten-free", "gluten - free" })]
         GlutenFree,
         [SearchValue("394^Peanut-Free")]
-        [Terms(new string[] { "peanut free", "peanut-free" })]
+        [Terms(new string[] { "peanut free", "peanut-free", "peanut - free" })]
         PeanutFree,
         [SearchValue("398^Seafood-Free")]
-        [Terms(new string[] { "seafood free", "seafood-free" })]
+        [Terms(new string[] { "seafood free", "seafood-free", "seafood - free" })]
         SeadfoodFree,
         [SearchValue("399^Sesame-Free")]
-        [Terms(new string[] { "sesame free", "sesame-free" })]
+        [Terms(new string[] { "sesame free", "sesame-free", "sesame - free" })]
         SesameFree,
         [SearchValue("400^Soy-Free")]
-        [Terms(new string[] { "soy free", "soy-free" })]
+        [Terms(new string[] { "soy free", "soy-free", "soy - free" })]
         SoyFree,
         [SearchValue("401^Sulfite-Free")]
-        [Terms(new string[] { "sulfite free", "sulfite-free" })]
+        [Terms(new string[] { "sulfite free", "sulfite-free", , "sulfite - free" })]
         SulfiteFree,
         [SearchValue("395^Tree Nut-Free")]
-        [Terms(new string[] { "tree nut free", "tree nut-free" })]
+        [Terms(new string[] { "tree nut free", "tree nut-free", "tree nut - free" })]
         TreeNutFree,
         [SearchValue("392^Wheat-Free")]
-        [Terms(new string[] { "wheat free", "wheat-free" })]
+        [Terms(new string[] { "wheat free", "wheat-free", "wheat - free" })]
         WheatFree
     }
 
@@ -71,7 +71,7 @@ namespace RecipeFinder.Model
         [Terms(new string[] { "lacto ovo vegetarian", "lacto-ovo vegetarian", "lacto ovo" })]
         LactoOvoVegetarian,
         [SearchValue("403^Paleo")]
-        [Terms(new string[] { "paleo" })]
+        [Terms(new string[] { "paleo", "steve" })]
         Paleo
     }
 
@@ -103,12 +103,7 @@ namespace RecipeFinder.Model
         [Template(TemplateUsage.NotUnderstood, "What does \"{0}\" mean???")]
         [Describe("Allowed diets")]
         [Template(TemplateUsage.NoPreference, "None")]
-        public List<AllowedAllergy> Allergies
-        {
-            get { return _allergies; }
-            set { _allergies = value; }
-        }
-        private List<AllowedAllergy> _allergies;
+        public AllowedDietaryRestriction DietaryRestriction;
 
         public static IForm<Recipe> BuildForm()
         {
@@ -120,7 +115,7 @@ namespace RecipeFinder.Model
             return new FormBuilder<Recipe>()
                         .Message("Welcome to the search recipe bot!")
                         .Field(nameof(Diet))
-                        .Field(nameof(Allergies))
+                        .Field(nameof(DietaryRestriction))
                         //.Message("Searching recipes using filters for diet {Diet} and allergies {Allergies}.")
                         //.Confirm("Do you want to order your {Length} {Sandwich} on {Bread} {&Bread} with {[{Cheese} {Toppings} {Sauces}]} to be sent to {DeliveryAddress} {?at {DeliveryTime:t}}?")
                         //.AddRemainingFields()
@@ -132,7 +127,7 @@ namespace RecipeFinder.Model
         public override string ToString()
         {
             var builder = new StringBuilder();
-            builder.AppendFormat("Allergies: {0}", string.Join(",", Allergies));
+            builder.AppendFormat("Allergies: {0}", string.Join(",", DietaryRestriction));
             builder.AppendFormat("Diet: {0}", Diet.ToString());
             return builder.ToString();
         }
