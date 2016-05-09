@@ -128,7 +128,10 @@ namespace RecipeFinder.Model
                 if (yrs.matches.Length > 0)
                 {
                     YummyRecipeResponse yr = await yp.GetRecipe(yrs.matches[0].id);
-                    await context.PostAsync(yr.name);
+
+                    var message = context.MakeMessage();
+                    message.Text = "**" + yr.name + "**  ![recipe](" + yr.images[0].hostedMediumUrl +")";
+                    await context.PostAsync(message);
                 }
                 else
                     await context.PostAsync("Nothing found");
