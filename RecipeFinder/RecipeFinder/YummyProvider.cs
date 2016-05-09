@@ -135,11 +135,13 @@ namespace YummyProvider
 	{
 		public SearchParameterType searchParameterType;
 		public string URLParameter;
+        public MetadataDictionaryType metadataDictionaryType;
 
-		public SearchParameter(SearchParameterType searchParameterType, string URLParameter)
+        public SearchParameter(SearchParameterType searchParameterType, string URLParameter, MetadataDictionaryType metadataDictionaryType)
 		{
 			this.searchParameterType = searchParameterType;
 			this.URLParameter = URLParameter;
+            this.metadataDictionaryType = metadataDictionaryType;
 		}
 
 	}
@@ -152,7 +154,6 @@ namespace YummyProvider
 
 	public class YummyRequestCondition
 	{
-		public MetadataDictionaryType metadataDictionaryType;
 		public SearchParameterType searchParameterType;
 
 		// for SearchParameterType.Search it should be general text of search - name of the product
@@ -300,19 +301,19 @@ namespace YummyProvider
 		};
 
 		static SearchParameter[] searchParameters = new SearchParameter[]
-			{
-				new SearchParameter(SearchParameterType.AllowedIngredient, "allowedIngredient[]"),
-				new SearchParameter(SearchParameterType.ExcludedIngredient, "excludedIngredient[]"),
-				new SearchParameter(SearchParameterType.AllowedAllergy, "allowedAllergy[]"),
-				new SearchParameter(SearchParameterType.AllowedDiet, "allowedDiet[]"),
-				new SearchParameter(SearchParameterType.AllowedCuisine, "allowedCuisine[]"),
-				new SearchParameter(SearchParameterType.ExcludedCuisine, "excludedCuisine[]"),
-				new SearchParameter(SearchParameterType.AllowedCourse, "allowedCourse[]"),
-				new SearchParameter(SearchParameterType.ExcludedCourse, "excludedCourse[]"),
-				new SearchParameter(SearchParameterType.Search, "q"),
-				new SearchParameter(SearchParameterType.MaxResult, "maxResult"),
-				new SearchParameter(SearchParameterType.MaxTotalTimeInSeconds, "maxTotalTimeInSeconds"),
-			};
+		{
+			new SearchParameter(SearchParameterType.AllowedIngredient, "allowedIngredient[]", MetadataDictionaryType.Ingredient),
+			new SearchParameter(SearchParameterType.ExcludedIngredient, "excludedIngredient[]", MetadataDictionaryType.Ingredient),
+			new SearchParameter(SearchParameterType.AllowedAllergy, "allowedAllergy[]", MetadataDictionaryType.Allergy),
+			new SearchParameter(SearchParameterType.AllowedDiet, "allowedDiet[]", MetadataDictionaryType.Diet),
+			new SearchParameter(SearchParameterType.AllowedCuisine, "allowedCuisine[]", MetadataDictionaryType.Cuisine),
+			new SearchParameter(SearchParameterType.ExcludedCuisine, "excludedCuisine[]", MetadataDictionaryType.Cuisine),
+			new SearchParameter(SearchParameterType.AllowedCourse, "allowedCourse[]", MetadataDictionaryType.Course),
+			new SearchParameter(SearchParameterType.ExcludedCourse, "excludedCourse[]", MetadataDictionaryType.Course),
+			new SearchParameter(SearchParameterType.Search, "q", MetadataDictionaryType.None),
+			new SearchParameter(SearchParameterType.MaxResult, "maxResult", MetadataDictionaryType.None),
+			new SearchParameter(SearchParameterType.MaxTotalTimeInSeconds, "maxTotalTimeInSeconds", MetadataDictionaryType.None),
+		};
 
         public static Metadata[] GetMetadata(MetadataDictionaryType metadataDictionaryType)
         {
@@ -354,7 +355,21 @@ namespace YummyProvider
 			}
 		}
 
-		void GetMetadata1()
+
+        public static MetadataDictionaryType GetMetadataDictionaryType(SearchParameterType searchParameterType)
+        {
+            MetadataDictionaryType result = MetadataDictionaryType.None;
+
+            if (searchParameters.Any(sp => sp.searchParameterType == searchParameterType))
+                result = searchParameters.First(sp => sp.searchParameterType == searchParameterType).metadataDictionaryType;
+
+            return result;
+        }
+
+
+
+
+        void GetMetadata1()
 		{
 			for (int i = 0; i < metadataDictionaries.Length; ++i)
 			{
@@ -376,15 +391,20 @@ namespace YummyProvider
                 bool add = true, addFilter = false;
                 string filter = null;
 
-                MetadataDictionary md = metadataDictionaries.FirstOrDefault(md1 => md1.metadataDictionaryType == yummyRequest.yummyRequestCondition[i].metadataDictionaryType);
-                if (md != null)
+                MetadataDictionaryType mdt = GetMetadataDictionaryType(yummyRequest.yummyRequestCondition[i].searchParameterType);
+
+                if (mdt != MetadataDictionaryType.None)
                 {
-                    add = md.metadataDictionary.Select(md1 => md1.IsMatch(yummyRequest.yummyRequestCondition[i].condition)).Count() > 0;
-                    addFilter = true;
-                    filter = md.metadataDictionary.First(md1 => md1.IsMatch(yummyRequest.yummyRequestCondition[i].condition)).searchValue;
+                    MetadataDictionary md = metadataDictionaries.FirstOrDefault(md1 => md1.metadataDictionaryType == mdt);
+                    if (md != null)
+                    {
+                        add = md.metadataDictionary.Select(md1 => md1.IsMatch(yummyRequest.yummyRequestCondition[i].condition)).Count() > 0;
+                        addFilter = true;
+                        filter = md.metadataDictionary.First(md1 => md1.IsMatch(yummyRequest.yummyRequestCondition[i].condition)).searchValue;
+                    }
                 }
 
-				if (add)
+                if (add)
 				{
 					string h = "&";
 					h += searchParameters.First(sp => sp.searchParameterType == yummyRequest.yummyRequestCondition[i].searchParameterType).URLParameter;
