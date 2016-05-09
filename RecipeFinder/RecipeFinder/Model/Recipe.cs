@@ -83,6 +83,17 @@ namespace RecipeFinder.Model
             yp = new YummlyProvider();
         }
 
+        [Optional]
+        [Template(TemplateUsage.NotUnderstood, "What does \"{0}\" mean???")]
+        [Describe("Ingredient")]
+        [Template(TemplateUsage.NoPreference, "None")]
+        public string Ingredient;
+
+        [Optional]
+        [Template(TemplateUsage.NotUnderstood, "What does \"{0}\" mean???")]
+        [Describe("End Products")]
+        [Template(TemplateUsage.NoPreference, "None")]
+        public string EndProduct;
 
         [Optional]
         [Prompt("Are you interested in a specific diet? {||}")]
@@ -98,13 +109,15 @@ namespace RecipeFinder.Model
         [Template(TemplateUsage.NoPreference, "None")]
         public AllowedDietaryRestriction DietaryRestriction;
 
+
+
         public static IForm<Recipe> BuildForm()
         {
             OnCompletionAsyncDelegate<Recipe> processOrder = async (context, state) =>
             {
                 List<YummyRequestCondition> conditions = new List<YummyRequestCondition>();
 
-                conditions.Add(new YummyRequestCondition(SearchParameterType.Search, "pizza"));
+                conditions.Add(new YummyRequestCondition(SearchParameterType.Search, state.EndProduct));
 
                 if (state.Diet != AllowedDiet.None)
                 {
@@ -135,6 +148,7 @@ namespace RecipeFinder.Model
                         .Message("Welcome to the search recipe bot!")
                         .Field(nameof(Diet))
                         .Field(nameof(DietaryRestriction))
+                        .AddRemainingFields()
                         //.Message("Searching recipes using filters for diet {Diet} and allergies {Allergies}.")
                         //.Confirm("Do you want to order your {Length} {Sandwich} on {Bread} {&Bread} with {[{Cheese} {Toppings} {Sauces}]} to be sent to {DeliveryAddress} {?at {DeliveryTime:t}}?")
                         //.AddRemainingFields()
