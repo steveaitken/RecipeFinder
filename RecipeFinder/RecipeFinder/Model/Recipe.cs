@@ -21,34 +21,24 @@ namespace RecipeFinder.Model
     public enum AllowedDietaryRestriction
     {
         None,
-        [SearchValue("396^Dairy-Free")]
         [Terms(new string[] { "dairy free", "dairy-free", "dairy - free" })]
         DairyFree,
-        [SearchValue("397^Egg-Free")]
         [Terms(new string[] { "egg free", "egg-free", "egg - free" })]
         EggFree,
-        [SearchValue("393^Gluten-Free")]
         [Terms(new string[] { "gluten free", "gluten-free", "gluten - free" })]
         GlutenFree,
-        [SearchValue("394^Peanut-Free")]
         [Terms(new string[] { "peanut free", "peanut-free", "peanut - free" })]
         PeanutFree,
-        [SearchValue("398^Seafood-Free")]
         [Terms(new string[] { "seafood free", "seafood-free", "seafood - free" })]
         SeadfoodFree,
-        [SearchValue("399^Sesame-Free")]
         [Terms(new string[] { "sesame free", "sesame-free", "sesame - free" })]
         SesameFree,
-        [SearchValue("400^Soy-Free")]
         [Terms(new string[] { "soy free", "soy-free", "soy - free" })]
         SoyFree,
-        [SearchValue("401^Sulfite-Free")]
         [Terms(new string[] { "sulfite free", "sulfite-free", "sulfite - free" })]
         SulfiteFree,
-        [SearchValue("395^Tree Nut-Free")]
         [Terms(new string[] { "tree nut free", "tree nut-free", "tree nut - free" })]
         TreeNutFree,
-        [SearchValue("392^Wheat-Free")]
         [Terms(new string[] { "wheat free", "wheat-free", "wheat - free" })]
         WheatFree
     }
