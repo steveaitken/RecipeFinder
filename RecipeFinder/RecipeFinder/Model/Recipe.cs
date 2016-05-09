@@ -78,11 +78,11 @@ namespace RecipeFinder.Model
     {
         static YummlyProvider yp;
 
-        static Recipe()
+        public Recipe(List<string> endProductList) : base()
         {
-            yp = new YummlyProvider();
+            yp = yp ?? new YummlyProvider();
+            this.EndProductList = endProductList;
         }
-
 
         [Optional]
         [Prompt("Are you interested in a specific diet? {||}")]
@@ -98,13 +98,15 @@ namespace RecipeFinder.Model
         [Template(TemplateUsage.NoPreference, "None")]
         public AllowedDietaryRestriction DietaryRestriction;
 
+        private List<string> EndProductList;
+
         public static IForm<Recipe> BuildForm()
         {
             OnCompletionAsyncDelegate<Recipe> processOrder = async (context, state) =>
             {
                 List<YummyRequestCondition> conditions = new List<YummyRequestCondition>();
 
-                conditions.Add(new YummyRequestCondition(SearchParameterType.Search, "pizza"));
+                conditions.Add(new YummyRequestCondition(SearchParameterType.Search, state.EndProductList.FirstOrDefault()));
 
                 if (state.Diet != AllowedDiet.None)
                 {
@@ -147,7 +149,10 @@ namespace RecipeFinder.Model
         {
             var builder = new StringBuilder();
             builder.AppendFormat("Allergies: {0}", string.Join(",", DietaryRestriction));
+            builder.AppendLine();
             builder.AppendFormat("Diet: {0}", Diet.ToString());
+            builder.AppendLine();
+            builder.AppendFormat("Search terms: {0}", string.Join(",", EndProductList));
             return builder.ToString();
         }
     };

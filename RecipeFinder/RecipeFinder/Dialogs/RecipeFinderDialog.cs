@@ -61,7 +61,7 @@ namespace RecipeFinder.Dialogs
             // make api call?
 
             // display results based on response
-            var pizzaForm = new FormDialog<Recipe>(new Recipe(), this.MakeRecipeForm, FormOptions.PromptInStart, result.Entities);
+            var pizzaForm = new FormDialog<Recipe>(new Recipe(endProductList), this.MakeRecipeForm, FormOptions.PromptInStart, result.Entities);
             context.Call<Recipe>(pizzaForm, RecipeFormComplete);
         }
 
