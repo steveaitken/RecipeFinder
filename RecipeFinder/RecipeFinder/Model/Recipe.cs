@@ -8,6 +8,7 @@ using System.Web;
 using YummyProvider;
 using RecipeFinder.ComponentModel;
 using System.Text;
+using System.Reflection;
 #pragma warning disable 649
 
 namespace RecipeFinder.Model
@@ -20,34 +21,24 @@ namespace RecipeFinder.Model
     public enum AllowedAllergy
     {
         None,
-        [SearchValue("396^Dairy-Free")]
-        [Terms(new string[] { "dairy free", "dairy-free" })]
+        [Terms(new string[] { "dairy-free", "dairy-free" })]
         DairyFree,
-        [SearchValue("397^Egg-Free")]
         [Terms(new string[] { "egg free", "egg-free" })]
         EggFree,
-        [SearchValue("393^Gluten-Free")]
         [Terms(new string[] { "gluten free", "gluten-free" })]
         GlutenFree,
-        [SearchValue("394^Peanut-Free")]
         [Terms(new string[] { "peanut free", "peanut-free" })]
         PeanutFree,
-        [SearchValue("398^Seafood-Free")]
         [Terms(new string[] { "seafood free", "seafood-free" })]
         SeadfoodFree,
-        [SearchValue("399^Sesame-Free")]
         [Terms(new string[] { "sesame free", "sesame-free" })]
         SesameFree,
-        [SearchValue("400^Soy-Free")]
         [Terms(new string[] { "soy free", "soy-free" })]
         SoyFree,
-        [SearchValue("401^Sulfite-Free")]
         [Terms(new string[] { "sulfite free", "sulfite-free" })]
         SulfiteFree,
-        [SearchValue("395^Tree Nut-Free")]
         [Terms(new string[] { "tree nut free", "tree nut-free" })]
         TreeNutFree,
-        [SearchValue("392^Wheat-Free")]
         [Terms(new string[] { "wheat free", "wheat-free" })]
         WheatFree
     }
@@ -55,22 +46,16 @@ namespace RecipeFinder.Model
     public enum AllowedDiet
     {
         None,
-        [SearchValue("388^Lacto vegetarian")]
         [Terms(new string[] { "lacto vegetarian" })]
         LactoVegetarian,
-        [SearchValue("389^Ovo vegetarian")]
         [Terms(new string[] { "ovo vegetarian" })]
         OvoVegetarian,
-        [SearchValue("390^Pescetarian")]
         [Terms(new string[] { "pescetarian" })]
         Pescetarian,
-        [SearchValue("386^Vegan")]
         [Terms(new string[] { "vegan" })]
         Vegan,
-        [SearchValue("387^Lacto-ovo vegetarian")]
-        [Terms(new string[] { "lacto ovo vegetarian", "lacto-ovo vegetarian", "lacto ovo" })]
+        [Terms(new string[] { "lacto-ovo vegetarian", "lacto ovo vegetarian", "lacto ovo" })]
         LactoOvoVegetarian,
-        [SearchValue("403^Paleo")]
         [Terms(new string[] { "paleo" })]
         Paleo
     }
@@ -91,6 +76,14 @@ namespace RecipeFinder.Model
     [Template(TemplateUsage.NotUnderstood, "I do not understand \"{0}\".", "Try again, I don't get \"{0}\".")]
     public class Recipe
     {
+        static YummlyProvider yp;
+
+        static Recipe()
+        {
+            yp = new YummlyProvider();
+        }
+
+
         [Optional]
         [Prompt("Are you interested in a specific diet? {||}")]
         [Template(TemplateUsage.NotUnderstood, "What does \"{0}\" mean???")]
@@ -114,7 +107,35 @@ namespace RecipeFinder.Model
         {
             OnCompletionAsyncDelegate<Recipe> processOrder = async (context, state) =>
             {
-                await context.PostAsync("We are currently processing your search. We will message you the results.");
+                List<YummyRequestCondition> conditions = new List<YummyRequestCondition>();
+
+                conditions.Add(new YummyRequestCondition(SearchParameterType.Search, "pizza"));
+
+                if (state.Diet != AllowedDiet.None)
+                {
+                    object[] attributes = typeof(AllowedDiet).GetMember(state.Diet.ToString())[0].GetCustomAttributes(typeof(TermsAttribute), false);
+                    if (attributes != null)
+                        conditions.Add(new YummyRequestCondition(SearchParameterType.AllowedDiet, ((TermsAttribute)attributes[0]).Alternatives[0]));
+                }
+
+                if (state.Allergies != null)
+                    for (int i = 0; i < state.Allergies.Count; ++i)
+                        if (state.Allergies[i] != AllowedAllergy.None)
+                        {
+                            object[] attributes = typeof(AllowedAllergy).GetMember(state.Allergies[i].ToString())[0].GetCustomAttributes(typeof(TermsAttribute), false);
+                            if (attributes != null)
+                                conditions.Add(new YummyRequestCondition(SearchParameterType.AllowedAllergy, ((TermsAttribute)attributes[0]).Alternatives[1]));
+                        }
+
+                YummyRecipesResponse yrs = await yp.GetRecipes(new YummyRequest(conditions.ToArray()));
+
+                if (yrs.matches.Length > 0)
+                {
+                    YummyRecipeResponse yr = await yp.GetRecipe(yrs.matches[0].id);
+                    await context.PostAsync(yr.name);
+                }
+                else
+                    await context.PostAsync("Nothing found");
             };
 
             return new FormBuilder<Recipe>()

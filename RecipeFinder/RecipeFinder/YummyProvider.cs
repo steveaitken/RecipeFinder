@@ -150,9 +150,14 @@ namespace YummyProvider
 	{
 		// assumed AND operation between
 		public YummyRequestCondition[] yummyRequestCondition;
-	}
 
-	public class YummyRequestCondition
+        public YummyRequest(YummyRequestCondition[] yummyRequestCondition)
+        {
+            this.yummyRequestCondition = yummyRequestCondition;
+        }
+    }
+
+	public struct YummyRequestCondition
 	{
 		public SearchParameterType searchParameterType;
 
@@ -160,7 +165,13 @@ namespace YummyProvider
 		// for SearchParameterType.MaxResult it should be a number
 
 		public string condition;
-	}
+
+        public YummyRequestCondition(SearchParameterType searchParameterType, string condition)
+        {
+            this.searchParameterType = searchParameterType;
+            this.condition = condition;
+        }
+    }
 
 
 
@@ -382,7 +393,7 @@ namespace YummyProvider
 			}
 		}
 
-		public string CreateGetRecipesQuery(YummyRequest yummyRequest)
+		string CreateGetRecipesQuery(YummyRequest yummyRequest)
 		{
 			string query = rootURL + recipesURL +  "?" + idKey;
 
