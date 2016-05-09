@@ -94,7 +94,7 @@ namespace RecipeFinder.Model
         [Optional]
         [Prompt("Do you have any allergy? {||}")]
         [Template(TemplateUsage.NotUnderstood, "What does \"{0}\" mean???")]
-        [Describe("Allowed diets")]
+        [Describe("Dietary Restriction")]
         [Template(TemplateUsage.NoPreference, "None")]
         public AllowedDietaryRestriction DietaryRestriction;
 
@@ -144,7 +144,7 @@ namespace RecipeFinder.Model
                         .AddRemainingFields()
                         //.Message("Searching recipes using filters for diet {Diet} and allergies {Allergies}.")
                         //.Confirm("Do you want to order your {Length} {Sandwich} on {Bread} {&Bread} with {[{Cheese} {Toppings} {Sauces}]} to be sent to {DeliveryAddress} {?at {DeliveryTime:t}}?")
-                        //.AddRemainingFields()
+                        .AddRemainingFields()
                         .Message("Searching your recipe...")
                         .OnCompletionAsync(processOrder)
                         .Build();
