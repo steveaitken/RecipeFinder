@@ -44,8 +44,8 @@ namespace RecipeFinder.Dialogs
             endProductList.AddRange(result.Entities.Where(f => f.Type == UtteranceType.EndProduct.ToString()).Select(f => f.Entity));
 
             // dsplay results based on response
-            var pizzaForm = new FormDialog<Recipe>(new Recipe(endProductList), this.MakeRecipeForm, FormOptions.PromptInStart, result.Entities);
-            context.Call<Recipe>(pizzaForm, RecipeFormComplete);
+            var recipeForm = new FormDialog<Recipe>(new Recipe(endProductList), this.MakeRecipeForm, FormOptions.PromptInStart, result.Entities);
+            context.Call<Recipe>(recipeForm, RecipeFormComplete);
         }
 
         [LuisIntent("FindRecipeByIngredients")]
@@ -57,15 +57,31 @@ namespace RecipeFinder.Dialogs
             ingredientList.AddRange(result.Entities.Where(f => f.Type == UtteranceType.Ingredient.ToString()).Select(f => f.Entity));
 
             // display results based on response
-            var pizzaForm = new FormDialog<Recipe>(new Recipe(ingredientList), this.MakeRecipeForm, FormOptions.PromptInStart, result.Entities);
-            context.Call<Recipe>(pizzaForm, RecipeFormComplete);
+            var recipeForm = new FormDialog<Recipe>(new Recipe(ingredientList), this.MakeRecipeForm, FormOptions.PromptInStart, result.Entities);
+            context.Call<Recipe>(recipeForm, RecipeFormComplete);
         }
 
         [LuisIntent("None")]
         public async Task None(IDialogContext context, LuisResult result)
         {
-            string message = $"Sorry I did not understand: " + string.Join(", ", result.Intents.Select(i => i.Intent));
+            string message = $"I'm sorry. I did not understand you. I'm still learning how to talk.";
             await context.PostAsync(message);
+
+            PromptDialog.Confirm(context, AfterMessageAsync, "Do you want to search for a recipe?", "Didn't get that!");
+        }
+
+        public async Task AfterMessageAsync(IDialogContext context, IAwaitable<bool> argument)
+        {
+            var confirm = await argument;
+            if (confirm)
+            {
+                var recipeForm = new FormDialog<Recipe>(new Recipe(new List<string>()), this.MakeRecipeForm, FormOptions.PromptInStart);
+                context.Call<Recipe>(recipeForm, RecipeFormComplete);
+            }
+            else
+            {
+                await context.PostAsync("Okay, I'll wait for your command.");
+            }
             context.Wait(MessageReceived);
         }
 
@@ -101,6 +117,12 @@ namespace RecipeFinder.Dialogs
 
         #endregion
 
+    }
+
+    public enum Entities
+    {
+        ByProduct,
+        ByIngredient
     }
 
     public enum UtteranceType
