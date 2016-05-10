@@ -61,6 +61,15 @@ namespace RecipeFinder.Dialogs
             context.Call<Recipe>(recipeForm, RecipeFormComplete);
         }
 
+        [LuisIntent("Greeting")]
+        public async Task Greeting(IDialogContext context, LuisResult result)
+        {
+            string message = $"Hello";
+            await context.PostAsync(message);
+
+            PromptDialog.Confirm(context, AfterMessageAsync, "Do you want to search for a recipe?", "Didn't get that!");
+        }
+
         [LuisIntent("None")]
         public async Task None(IDialogContext context, LuisResult result)
         {
@@ -75,6 +84,7 @@ namespace RecipeFinder.Dialogs
             var confirm = await argument;
             if (confirm)
             {
+                context.Done<bool>(true);
                 var recipeForm = new FormDialog<Recipe>(new Recipe(new List<string>()), this.MakeRecipeForm, FormOptions.PromptInStart);
                 context.Call<Recipe>(recipeForm, RecipeFormComplete);
             }
