@@ -79,7 +79,7 @@ namespace RecipeFinder.Model
     {
         static YummlyProvider yp;
 
-        public Recipe(List<string> searchTerms) : base()
+        public Recipe(List<string> searchTerms)
         {
             yp = yp ?? new YummlyProvider();
             this.SearchTerms = searchTerms;
@@ -124,44 +124,55 @@ namespace RecipeFinder.Model
                         conditions.Add(new YummyRequestCondition(SearchParameterType.AllowedAllergy, ((TermsAttribute)attributes[0]).Alternatives[1]));
                 }
 
-                YummyRecipesResponse yrs = await yp.GetRecipes(new YummyRequest(conditions.ToArray()));
-                if (yrs.matches.Any())
+                try
                 {
-                    var message = context.MakeMessage();
-                    message.Attachments = new List<Attachment>();
-                    var actions = new List<Microsoft.Bot.Connector.Action>();
-
-                    foreach (var recipeResult in yrs.matches)
+                    YummyRecipesResponse yrs = await yp.GetRecipes(new YummyRequest(conditions.ToArray()));
+                    if (yrs.matches.Any())
                     {
-                        YummyRecipeResponse yr = await yp.GetRecipe(recipeResult.id);
+                        var message = context.MakeMessage();
+                        message.Attachments = new List<Attachment>();
+                        var actions = new List<Microsoft.Bot.Connector.Action>();
 
-                        var sbIngredients = new StringBuilder();
-                        foreach (var ingredient in yr.ingredientLines)
+                        foreach (var recipeResult in yrs.matches)
                         {
-                            sbIngredients.Append(ingredient);
-                            sbIngredients.AppendLine();
+                       
+                                YummyRecipeResponse yr = await yp.GetRecipe(recipeResult.id);
+
+                                var sbIngredients = new StringBuilder();
+                                foreach (var ingredient in yr.ingredientLines)
+                                {
+                                    sbIngredients.AppendFormat("- {0}", ingredient);
+                                    sbIngredients.AppendLine();
+                                }
+
+                                actions.Add(new Microsoft.Bot.Connector.Action
+                                {
+                                    Image = yr.images[0].hostedMediumUrl,
+                                    Url = yr.source.sourceRecipeUrl,
+                                    Title = string.Format("**{0}**", yr.name),
+                                    Message = sbIngredients.ToString()
+                                    //Message = string.Format("![recipe]({0})",yr.images[0].hostedMediumUrl)
+                                });
                         }
 
-                        actions.Add(new Microsoft.Bot.Connector.Action
+                        message.Attachments.Add(new Attachment
                         {
-                            Image = yr.images[0].hostedMediumUrl,
-                            Url = yr.source.sourceRecipeUrl,
-                            Title = string.Format("**{0}**", yr.name),
-                            Message = sbIngredients.ToString()
-                            //Message = string.Format("![recipe]({0})",yr.images[0].hostedMediumUrl)
+                            Title = "Results:",
+                            Actions = actions
                         });
+
+                        await context.PostAsync(message);
                     }
-
-                    message.Attachments.Add(new Attachment
+                    else
                     {
-                        Title = "Results:",
-                        Actions = actions
-                    });
-
-                    await context.PostAsync(message);
+                        await context.PostAsync("Nothing found");
+                    }
                 }
-                else
-                    await context.PostAsync("Nothing found");
+                catch (Exception)
+                {
+                    await context.PostAsync("An error occurred while searching for a recipe. Please try it again later. ");
+                    //todo: add log
+                }
             };
 
             return new FormBuilder<Recipe>()

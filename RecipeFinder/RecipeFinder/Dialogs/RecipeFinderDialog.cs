@@ -1,13 +1,14 @@
-﻿using Microsoft.Bot.Builder.Dialogs;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.FormFlow;
 using Microsoft.Bot.Builder.Luis;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Linq;
-using RecipeFinder.Model;
-using System.Text;
 using Microsoft.Bot.Builder.Luis.Models;
+using RecipeFinder.Model;
 
 namespace RecipeFinder.Dialogs
 {
@@ -16,20 +17,16 @@ namespace RecipeFinder.Dialogs
     public class RecipeFinderDialog : LuisDialog<Recipe>
     {
         #region variables
-        private readonly BuildFormDelegate<Recipe> MakeRecipeForm;
-        public const string Entity_Ingredient = "";
-        public const string Entity_EndProduct = "";
-        public const string Entity_Dietary_Restriction = "";
+        private readonly BuildFormDelegate<Recipe> _makeRecipeForm;
 
         #endregion
 
 
         #region constructors
 
-        public RecipeFinderDialog(BuildFormDelegate<Recipe> makeRecipeForm, ILuisService service = null)
-            : base(service)
+        internal RecipeFinderDialog(BuildFormDelegate<Recipe> makeRecipeForm)
         {
-            MakeRecipeForm = makeRecipeForm;
+            _makeRecipeForm = makeRecipeForm;
         }
 
         #endregion
@@ -45,7 +42,7 @@ namespace RecipeFinder.Dialogs
             endProductList.AddRange(result.Entities.Where(f => f.Type == UtteranceType.EndProduct.ToString()).Select(f => f.Entity));
 
             // dsplay results based on response
-            var recipeForm = new FormDialog<Recipe>(new Recipe(endProductList), this.MakeRecipeForm, FormOptions.PromptInStart, result.Entities);
+            var recipeForm = new FormDialog<Recipe>(new Recipe(endProductList), this._makeRecipeForm, FormOptions.PromptInStart, result.Entities);
             context.Call<Recipe>(recipeForm, RecipeFormComplete);
         }
 
@@ -58,7 +55,7 @@ namespace RecipeFinder.Dialogs
             ingredientList.AddRange(result.Entities.Where(f => f.Type == UtteranceType.Ingredient.ToString()).Select(f => f.Entity));
 
             // display results based on response
-            var recipeForm = new FormDialog<Recipe>(new Recipe(ingredientList), this.MakeRecipeForm, FormOptions.PromptInStart, result.Entities);
+            var recipeForm = new FormDialog<Recipe>(new Recipe(ingredientList), this._makeRecipeForm, FormOptions.PromptInStart, result.Entities);
             context.Call<Recipe>(recipeForm, RecipeFormComplete);
         }
 
@@ -132,12 +129,6 @@ namespace RecipeFinder.Dialogs
 
         #endregion
 
-    }
-
-    public enum Entities
-    {
-        ByProduct,
-        ByIngredient
     }
 
     public enum UtteranceType
