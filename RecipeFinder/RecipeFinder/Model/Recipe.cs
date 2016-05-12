@@ -9,6 +9,7 @@ using YummyProvider;
 using RecipeFinder.ComponentModel;
 using System.Text;
 using System.Reflection;
+using Microsoft.Bot.Connector;
 #pragma warning disable 649
 
 namespace RecipeFinder.Model
@@ -124,13 +125,39 @@ namespace RecipeFinder.Model
                 }
 
                 YummyRecipesResponse yrs = await yp.GetRecipes(new YummyRequest(conditions.ToArray()));
-
-                if (yrs.matches.Length > 0)
+                if (yrs.matches.Any())
                 {
-                    YummyRecipeResponse yr = await yp.GetRecipe(yrs.matches[0].id);
-
                     var message = context.MakeMessage();
-                    message.Text = "**" + yr.name + "**  ![recipe](" + yr.images[0].hostedMediumUrl +")";
+                    message.Attachments = new List<Attachment>();
+                    var actions = new List<Microsoft.Bot.Connector.Action>();
+
+                    foreach (var recipeResult in yrs.matches)
+                    {
+                        YummyRecipeResponse yr = await yp.GetRecipe(recipeResult.id);
+
+                        var sbIngredients = new StringBuilder();
+                        foreach (var ingredient in yr.ingredientLines)
+                        {
+                            sbIngredients.Append(ingredient);
+                            sbIngredients.AppendLine();
+                        }
+
+                        actions.Add(new Microsoft.Bot.Connector.Action
+                        {
+                            Image = yr.images[0].hostedMediumUrl,
+                            Url = yr.source.sourceRecipeUrl,
+                            Title = string.Format("**{0}**", yr.name),
+                            Message = sbIngredients.ToString()
+                            //Message = string.Format("![recipe]({0})",yr.images[0].hostedMediumUrl)
+                        });
+                    }
+
+                    message.Attachments.Add(new Attachment
+                    {
+                        Title = "Results:",
+                        Actions = actions
+                    });
+
                     await context.PostAsync(message);
                 }
                 else

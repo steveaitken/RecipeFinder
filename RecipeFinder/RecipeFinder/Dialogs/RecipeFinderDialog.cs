@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
 using RecipeFinder.Model;
+using System.Text;
+using Microsoft.Bot.Builder.Luis.Models;
 
 namespace RecipeFinder.Dialogs
 {
@@ -14,8 +16,7 @@ namespace RecipeFinder.Dialogs
     public class RecipeFinderDialog : LuisDialog<Recipe>
     {
         #region variables
-
-        private readonly BuildForm<Recipe> MakeRecipeForm;
+        private readonly BuildFormDelegate<Recipe> MakeRecipeForm;
         public const string Entity_Ingredient = "";
         public const string Entity_EndProduct = "";
         public const string Entity_Dietary_Restriction = "";
@@ -25,7 +26,7 @@ namespace RecipeFinder.Dialogs
 
         #region constructors
 
-        public RecipeFinderDialog(BuildForm<Recipe> makeRecipeForm, ILuisService service = null)
+        public RecipeFinderDialog(BuildFormDelegate<Recipe> makeRecipeForm, ILuisService service = null)
             : base(service)
         {
             MakeRecipeForm = makeRecipeForm;
@@ -64,29 +65,38 @@ namespace RecipeFinder.Dialogs
         [LuisIntent("Greeting")]
         public async Task Greeting(IDialogContext context, LuisResult result)
         {
-            string message = $"Hello";
-            await context.PostAsync(message);
-
-            PromptDialog.Confirm(context, AfterMessageAsync, "Do you want to search for a recipe?", "Didn't get that!");
+            StringBuilder message = new StringBuilder();
+            message.Append("Hello there!");
+            message.AppendLine();
+            message.AppendLine();
+            message.Append("Do you want to search for a recipe?");
+            PromptDialog.Confirm(context, AfterMessageAsync, message.ToString(), "Didn't get that!");
         }
 
         [LuisIntent("None")]
         public async Task None(IDialogContext context, LuisResult result)
         {
-            string message = $"I'm sorry. I did not understand you. I'm still learning how to talk.";
-            await context.PostAsync(message);
+            StringBuilder message = new StringBuilder();
+            message.Append("I'm sorry. I did not understand you. I'm still learning how to talk.");
+            message.AppendLine();
+            message.AppendLine();
+            message.Append("Do you want to search for a recipe?");
 
-            PromptDialog.Confirm(context, AfterMessageAsync, "Do you want to search for a recipe?", "Didn't get that!");
+            PromptDialog.Confirm(context, AfterMessageAsync, message.ToString(), "Didn't get that!");
         }
 
-        public async Task AfterMessageAsync(IDialogContext context, IAwaitable<bool> argument)
+
+        #endregion
+
+
+        #region private methods
+
+        private async Task AfterMessageAsync(IDialogContext context, IAwaitable<bool> argument)
         {
             var confirm = await argument;
             if (confirm)
             {
-                context.Done<bool>(true);
-                var recipeForm = new FormDialog<Recipe>(new Recipe(new List<string>()), this.MakeRecipeForm, FormOptions.PromptInStart);
-                context.Call<Recipe>(recipeForm, RecipeFormComplete);
+                await context.PostAsync("TODO: redirect to the recipe form");
             }
             else
             {
@@ -94,11 +104,6 @@ namespace RecipeFinder.Dialogs
             }
             context.Wait(MessageReceived);
         }
-
-        #endregion
-
-
-        #region private methods
 
         private async Task RecipeFormComplete(IDialogContext context, IAwaitable<Recipe> result)
         {
